@@ -83,7 +83,7 @@ class ArrayExpression(LazyArray):
 
     def compile(self, knl_name, wg_size):
         self.wg_size = wg_size
-        self.cuda_prg = assemble_cuda(self, knl_name)
+        self.cuda_prg, self.cuda_code = assemble_cuda(self, knl_name)
 
     def evaluate(self, *np_data):
         assert self.cuda_prg is not None
