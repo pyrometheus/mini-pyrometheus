@@ -81,24 +81,24 @@ class ArrayExpression(LazyArray):
         self.shape = shape
         self.cuda_prg = None
 
-    def compile(self, knl_name, inner_length):
-        self.inner_length = inner_length
+    def compile(self, knl_name, wg_size):
+        self.wg_size = wg_size
         self.cuda_prg = assemble_cuda(self, knl_name)
 
     def evaluate(self, *np_data):
-        assert np_data.shape == self.shape
         assert self.cuda_prg is not None
 
-        il = self.inner_length
+        ws = self.wg_size
         dim = len(self.shape)
         shape = self.shape + (1,) if dim == 2 else self.shape
-        grid = (
-            (s + il - 1)//il for s in shape
+        print(shape)
+        grid = tuple(
+            (s + ws - 1)//ws for s in shape
         )
-        block = (il, il, 1) if dim == 2 else (il, il, il)
+        block = (ws, ws, 1) if dim == 2 else (ws, ws, ws)
 
-        dev_data = tuple(gpuarray.to_gpu(a) for a in np_data)
-        self.cuda_prg(*dev_data, grid=grid, block=block)
+        dev_data = [gpuarray.to_gpu(a) for a in np_data]
+        self.cuda_prg(*dev_data, grid=grid, block=block)        
 
 
 def broadcast_binary_op(ary_1, ary_2, op: Expression):

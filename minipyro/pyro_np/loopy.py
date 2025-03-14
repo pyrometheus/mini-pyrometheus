@@ -36,8 +36,15 @@ def assemble_cuda(ary, knl_name):
         lp_knl,
         {a: np.float64 for a in lp_knl['get_rxn_rate'].arg_dict}
     )
-    lp_knl = lp_knl.copy(target=lp.CudaTarget())
 
+    for i in range(dim):
+        lp_knl = lp.split_iname(
+            lp_knl, f'i{i}', ary.wg_size,
+            outer_tag=f'g.{i}', inner_tag=f'l.{i}'
+        )
+                                
+    lp_knl = lp_knl.copy(target=lp.CudaTarget())
     code_str = lp.generate_code_v2(lp_knl).device_code()
+    print('\n' + code_str + '\n')
     prg = SourceModule(code_str).get_function(knl_name)
     return prg
