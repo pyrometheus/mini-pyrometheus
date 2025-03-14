@@ -1,8 +1,7 @@
 Mini-Pyrometheus: Mini Code Generation for Combustion Mechanisms
 ===========================================================
 
-.. image::
-https://github.com/pyrometheus/pyrometheus/workflows/CI/badge.svg?branch=main&event=push
+.. image:: https://badge.fury.io/py/pyrometheus.png
 
 .. When you update this description, consider also updating the one in doc/index.rst.
 
