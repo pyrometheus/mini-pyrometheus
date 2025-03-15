@@ -25,8 +25,8 @@ def run_minipyro():
     pyro_gas = pyro_class(adiff_np)
 
     num_x = 10
-    temp_np = 300 * np.ones((num_x,), dtype=np.float64)
-    conc_np = 0.5 * np.ones((2, num_x,), dtype=np.float64)
+    temp_np = np.linspace(1000, 2100, num_x, endpoint=False)
+    conc_np = np.stack((0.2 * np.ones(num_x), 0.8 * np.ones(num_x)))
 
     temp_ad = adiff_np.AutodiffVariable(temp_np, name='temperature')
     conc_ad = adiff_np.AutodiffVariable(conc_np, name='concentration')
