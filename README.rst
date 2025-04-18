@@ -1,7 +1,7 @@
 Mini-Pyrometheus: Mini Code Generation for Combustion Mechanisms
 ===========================================================
 
-.. image:: doc/pyro.png
+.. image:: doc/minipyro.png
 	   :width: 640
 
 .. When you update this description, consider also updating the one in doc/index.rst.
