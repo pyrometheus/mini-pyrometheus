@@ -1,8 +1,20 @@
-import cantera as ct
+from bandit.general_thermochem import BaseMechanism
 from mako.template import Template
-from minipyro.chem_expr import arrhenius_expr
-from minipyro.symbolic import Variable
-from minipyro.codegen.mappers import CodeGenerationMapper
+from pymbolic.mapper.stringifier import StringifyMapper, PREC_NONE, PREC_CALL
+# from minipyro.symbolic import Variable
+# from minipyro.codegen.mappers import CodeGenerationMapper
+
+
+class CodeGenerationMapper(StringifyMapper):
+    def map_constant(self, expr, enclosing_prec):
+        return repr(expr)
+
+    def map_call(self, expr, enclosing_prec, *args, **kwargs):
+        return self.format(
+            "self.pyro_np.%s(%s)",
+            self.rec(expr.function, PREC_CALL, *args, **kwargs),
+            self.join_rec(", ", expr.parameters, PREC_NONE, *args, **kwargs),
+        )
 
 
 code_tpl = Template("""
@@ -15,34 +27,19 @@ class Thermochemistry:
         self.pyro_np = pyro_np
 
     def get_rxn_rate(self, temperature, concentration):
-        k = ${cgm.rec(arrhenius_expr(rxn, Variable("temperature")))}
-        conc_product = ${cgm.rec(conc_product)}
-        return k * conc_product
+        return ${cgm(mass_action_rate)}
 """, strict_undefined=True)
 
 
-def get_thermochem_class():
-
-    rxn = ct.Reaction(
-        # Reactants & Products for M + N -> P + Q
-        {'m': 1, 'n': 1}, {'p': 1, 'q': 1},
-        # Arrhenius coefficients, taken from Reaction 1, San Diego mech
-        {'A': 35127309770106.477, 'b': -0.7, 'Ea': 8590 * ct.gas_constant}
-    )
-
-    conc = Variable('concentration')
-    conc_product = conc[0] * conc[1]
+def get_thermochem_class(bandit_mech: BaseMechanism):
 
     cgm = CodeGenerationMapper()
     code_str = code_tpl.render(
-        Variable=Variable,
-        arrhenius_expr=arrhenius_expr,
-        conc_product=conc_product,
-        rxn=rxn,
+        mass_action_rate=bandit_mech.mass_action_rates[0],
         cgm=cgm,
     )
 
     exec_dict = {}
     exec(compile(code_str, '<generated code', 'exec'), exec_dict)
     exec_dict['_MODULE_SOURCE_CODE'] = code_str
-    return exec_dict['Thermochemistry']
+    return exec_dict['Thermochemistry'], code_str
