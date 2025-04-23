@@ -63,6 +63,14 @@ class Quotient(Expression):
         self.den = den
 
 
+class Pow(Expression):
+    mapper_method = 'map_power'
+
+    def __init__(self, base, exponent):
+        self.base = base
+        self.exponent = exponent
+
+        
 class Call(Expression):
     mapper_method = 'map_call'
 

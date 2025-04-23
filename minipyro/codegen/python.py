@@ -26,7 +26,7 @@ class Thermochemistry:
     def __init__(self, pyro_np=np):
         self.pyro_np = pyro_np
 
-    def get_rxn_rate(self, temperature, concentration):
+    def get_rxn_rate(self, temperature, concentrations):
         return ${cgm(mass_action_rate)}
 """, strict_undefined=True)
 

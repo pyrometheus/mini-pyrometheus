@@ -1,7 +1,7 @@
 from minipyro.symbolic import Variable
 
 
-_prec = {'var': 0, 'call': 1, 'sum': 2, 'mul': 3, 'div': 4, 'sub': 5}
+_prec = {'var': 0, 'call': 1, 'sum': 2, 'mul': 3, 'div': 4, 'sub': 5, 'pow': 6}
 
 
 def parenthesize(expr_str, prec_expr, prec):
@@ -37,6 +37,14 @@ class CodeGenerationMapper:
             ' * '.join([self.rec(c, _prec['mul']) for c in expr.children]),
             _prec['mul'], prec)
 
+    def map_power(self, expr, prec):
+        return parenthesize(
+            ' ** '.join([
+                self.rec(expr.base), self.rec(expr.exponent)
+            ]),
+            _prec['pow'], prec
+        )
+    
     def map_quotient(self, expr, prec):
         return parenthesize(
             ' / '.join([
@@ -61,7 +69,8 @@ class CodeGenerationMapper:
 # {{{
 
 class LoopyMapper:
-    prec = {'var': 0, 'call': 1, 'sum': 2, 'mul': 3, 'div': 4, 'sub': 5}
+    prec = {'var': 0, 'call': 1, 'sum': 2,
+            'mul': 3, 'div': 4, 'sub': 5, 'pow': 6}
 
     def rec(self, ary, *args):
         import numbers
@@ -84,6 +93,13 @@ class LoopyMapper:
                 self.rec(c, prec) for c in ary.expr.children
             ]), _prec['mul'], prec)
 
+    def map_power(self, ary, prec):
+        return parenthesize(
+            ' ** '.join([
+                self.rec(ary.expr.base, prec),
+                self.rec(ary.expr.exponent, prec)
+            ]), _prec['pow'], prec)
+    
     def map_quotient(self, ary, prec):
         return parenthesize(
             ' / '.join([

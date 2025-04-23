@@ -2,7 +2,7 @@ import numpy as np
 import pycuda.gpuarray as gpuarray
 from minipyro.symbolic import (
     Variable, Expression, Call, Sum,
-    Product, Quotient, Subscript
+    Product, Quotient, Subscript, Pow
 )
 from minipyro.pyro_np.loopy import assemble_cuda
 
@@ -59,6 +59,15 @@ class LazyArray:
         else:
             return ArrayExpression(
                 expr=Quotient(other, self),
+                shape=self.shape
+            )
+
+    def __pow__(self, other):
+        if isinstance(other, LazyArray):
+            raise NotImplementedError
+        else:
+            return ArrayExpression(
+                expr=Pow(self, other),
                 shape=self.shape
             )
 
@@ -124,6 +133,14 @@ def exp(ary: LazyArray):
 
 def log(ary: LazyArray):
     expr = Call('log', ary)
+    return ArrayExpression(
+        expr=expr,
+        shape=ary.shape
+    )
+
+
+def sqrt(ary: LazyArray):
+    expr = Call('sqrt', ary)
     return ArrayExpression(
         expr=expr,
         shape=ary.shape

@@ -36,6 +36,7 @@ def assemble_cuda(ary, knl_name):
         lp_knl,
         {a: np.float64 for a in lp_knl['get_rxn_rate'].arg_dict}
     )
+    print(lp_knl)
 
     for i in range(dim):
         lp_knl = lp.split_iname(
